@@ -18,10 +18,9 @@ if sr != 32000:
 # 4. 배치 형식으로 맞추기 (batch_size=2 권장, model 내부가 그 구조를 기대함)
 waveform = waveform.unsqueeze(0).repeat(2, 1, 1)  # shape: (2, 1, N)
 
-# 5. 텍스트 스타일 프롬프트 입력
 descriptions = [
-    "dreamy lo-fi remix with soft keys and ambient textures",
-    "nostalgic chillhop beat with mellow guitar and tape hiss"
+    "boom bap hip-hop beat with vinyl crackle and jazzy piano",
+    "underground hip-hop track with punchy drums and deep bass"
 ]
 
 # 6. 음악 생성 (멜로디 + 텍스트 기반)

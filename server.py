@@ -1,0 +1,38 @@
+from fastapi import FastAPI, File, UploadFile, Form
+from audiocraft.models import MusicGen
+import torchaudio
+import torch
+import os
+
+app = FastAPI()
+model = MusicGen.get_pretrained("facebook/musicgen-melody")
+model.set_generation_params(duration=10)
+
+@app.post("/generate")
+async def generate_music(
+    audio_file: UploadFile = File(...),
+    prompt1: str = Form(...),
+    prompt2: str = Form(...)
+):
+    # Save uploaded audio
+    input_path = "input.wav"
+    output_path = "output.wav"
+    with open(input_path, "wb") as f:
+        f.write(await audio_file.read())
+
+    # Load and resample
+    waveform, sr = torchaudio.load(input_path)
+    if sr != 32000:
+        waveform = torchaudio.transforms.Resample(orig_freq=sr, new_freq=32000)(waveform)
+    waveform = waveform.unsqueeze(0).repeat(2, 1, 1)
+
+    # Generate
+    output = model.generate_with_chroma(
+        descriptions=[prompt1, prompt2],
+        melody_wavs=waveform,
+        melody_sample_rate=32000,
+        progress=True
+    )
+
+    torchaudio.save(output_path, output[0].cpu(), 32000)
+    return {"message": "Success", "file": output_path}
