@@ -46,7 +46,7 @@ async def generate_music(
     )
 
     torchaudio.save(output_path, output[0].cpu(), 32000)
-    return {"message": "Success", "file": output_path}
+    return FileResponse(output_path, media_type="audio/wav", filename="output.wav")
 
 @app.get("/download")
 def download_audio():
