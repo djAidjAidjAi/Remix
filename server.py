@@ -1,7 +1,6 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import FileResponse, JSONResponse
-from fastapi.responses import FileResponse
 from audiocraft.models import MusicGen
 import torchaudio
 import torch
