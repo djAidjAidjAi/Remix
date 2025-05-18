@@ -1,6 +1,7 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse
 from audiocraft.models import MusicGen
 import torchaudio
 import torch
@@ -25,16 +26,19 @@ async def generate_music(
     prompt1: str = Form(...),
     prompt2: str = Form(...)
 ):
+    # Save uploaded audio
     input_path = "input.wav"
     output_path = "output.wav"
     with open(input_path, "wb") as f:
         f.write(await audio_file.read())
 
+    # Load and resample
     waveform, sr = torchaudio.load(input_path)
     if sr != 32000:
         waveform = torchaudio.transforms.Resample(orig_freq=sr, new_freq=32000)(waveform)
     waveform = waveform.unsqueeze(0).repeat(2, 1, 1)
 
+    # Generate
     output = model.generate_with_chroma(
         descriptions=[prompt1, prompt2],
         melody_wavs=waveform,
@@ -61,3 +65,5 @@ async def mock_generate():
 @app.get("/mock_download")
 def mock_download():
     return FileResponse("empty.mp3", media_type="audio/mpeg", filename="mock_remix.mp3")
+    return FileResponse(output_path, media_type="audio/wav", filename="output.wav")
+    # return {"message": "Success", "file": output_path}
